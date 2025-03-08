@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Md. Sojib Miya Video Gallary | Taohid Islam</title>
+    <style>
+        /* --- Basic Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background-color: #f9f9f9;
+        }
+
+        /* --- Header --- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ff0000;
+            color: white;
+            padding: 15px 20px;
+        }
+        .channel-info {
+            display: flex;
+            align-items: center;
+        }
+        .channel-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .channel-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* --- Video Gallery --- */
+        .container {
+            width: 90%;
+            margin: 20px auto;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .video-card {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .video-card:hover {
+            transform: scale(1.05);
+        }
+        .video-card img {
+            width: 100%;
+            border-radius: 8px;
+        }
+        .video-card h3 {
+            font-size: 16px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        /* --- Video Modal --- */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .video-content {
+            position: relative;
+            background: #fff;
+            padding: 20px;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 10px;
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header with Channel Info -->
+    <div class="header">
+        <div class="channel-info">
+            <img src="" class="channel-logo" id="channelLogo">
+            <span class="channel-name" id="channelName">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Video Gallery -->
+    <div class="container">
+        <h1>Videos</h1>
+        <div class="video-grid" id="videoGrid">
+            <!-- Videos will be loaded here dynamically -->
+        </div>
+    </div>
+
+    <!-- Video Player Modal -->
+    <div class="video-modal" id="videoModal">
+        <div class="video-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <iframe id="videoPlayer" width="100%" height="500px" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = "AIzaSyBFxF8kRg7VdxYKsQdFO-WQkdxS9vF-B6M";
+        const CHANNEL_ID = "UCpjFsl7AMHzabTOeWLmKgSQ";
+
+        // Load Channel Info
+        async function loadChannelInfo() {
+            const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${CHANNEL_ID}&key=${API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.items.length > 0) {
+                const channel = data.items[0].snippet;
+                document.getElementById("channelName").textContent = channel.title;
+                document.getElementById("channelLogo").src = channel.thumbnails.default.url;
+            }
+        }
+
+        // Load Channel Videos
+        async function loadVideos() {
+            const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=10`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const videoGrid = document.getElementById("videoGrid");
+            videoGrid.innerHTML = "";
+
+            data.items.forEach(video => {
+                if (video.id.videoId) {
+                    const videoCard = document.createElement("div");
+                    videoCard.classList.add("video-card");
+                    videoCard.innerHTML = `
+                        <img src="${video.snippet.thumbnails.high.url}" alt="${video.snippet.title}">
+                        <h3>${video.snippet.title}</h3>
+                    `;
+                    videoCard.addEventListener("click", () => openModal(video.id.videoId));
+                    videoGrid.appendChild(videoCard);
+                }
+            });
+        }
+
+        // Open Video Modal
+        function openModal(videoId) {
+            const modal = document.getElementById("videoModal");
+            const player = document.getElementById("videoPlayer");
+            player.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            modal.style.display = "flex";
+        }
+
+        // Close Video Modal
+        function closeModal() {
+            const modal = document.getElementById("videoModal");
+            const player = document.getElementById("videoPlayer");
+            player.src = "";
+            modal.style.display = "none";
+        }
+
+        // Load Everything
+        loadChannelInfo();
+        loadVideos();
+    </script>
+
+</body>
+</html>
